@@ -171,12 +171,10 @@
         methods: {
             // for get and preview firebase data
             async getInvoiceData() {
-                console.log(this.$route.params.id);
                 const docRef = doc(db, 'invoice-details', this.$route.params.id);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     this.invoiceData = docSnap.data();
-                    console.log(this.invoiceData)
                 } else {
                     console.log('No data found!');
                 }

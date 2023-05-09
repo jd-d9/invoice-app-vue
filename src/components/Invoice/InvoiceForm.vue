@@ -158,6 +158,7 @@
                 const response = await addDoc(collection(db, 'invoice-details'), {
                     logInId: localStorage.getItem('userId'),
                     invoiceStatus: e.target.value,
+                    invoiceType: 'Active',
                     userSignature: this.userSignature,
                     attachedFile: this.attachedFiles,
                     additionalNote: this.noteContent,
@@ -206,7 +207,6 @@
                     }else {
                         this.totalProductAmount = productData[0].amount;
                     }
-                    console.log(this.totalProductAmount, 'totalProductAmount');
                     const productRef = doc(db, 'invoice-details', this.documentId);
                     await updateDoc(productRef, {
                         productDetails: productData,
@@ -222,14 +222,10 @@
             setAttachmentFile(data) {
                 this.attachedFiles = data;
             },
-            saveAsDraft(e) {
-                console.log(e.target.value)
-            },
             duplicateInvoiceData(data) {
                 this.duplicateInvoiceArray = data.filter((val) => {
                     return val.id === this.$route.params.id;
                 })
-                console.log(this.duplicateInvoiceArray[0], 'this.duplicateInvoiceArray')
                 this.duplicateProduct = this.duplicateInvoiceArray[0].productDetails;
                 this.invoiceDueDate = this.duplicateInvoiceArray[0].invoiceDetails.invoiceDueDate;
                 this.userSignature = this.duplicateInvoiceArray[0].userSignature;

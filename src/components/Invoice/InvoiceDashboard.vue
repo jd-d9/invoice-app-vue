@@ -36,8 +36,8 @@
                             <div class="image-wrapper">
                                 <img src="../../assets/invoice-icon4.png" alt="icon" class="img-fluid">
                             </div>
-                            <h6 class="text-secondary mb-0 mt-2">Unpaid Invoices</h6>
-                            <h5 class="text-warning text-center fw-bold">{{ onlyDrafts }}</h5>
+                            <h6 class="text-secondary mb-0 mt-2">Deleted Invoices</h6>
+                            <h5 class="text-warning text-center fw-bold">{{ deletedInvoices }}</h5>
                         </div>
                     </div>
                 </div>
@@ -130,7 +130,15 @@
                                 </tbody>
                                 <tbody v-else>
                                     <tr>
-                                        <td colspan="9" class="text-center">No Data Found. First Create Invoice.</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td class="text-center">No Invoice Found.</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -464,20 +472,23 @@
         },
         computed: {
             totalInvoices() {
-                return this.allInvoices.length < 10 ? '0' + this.allInvoices.length : this.allInvoices.length;
+                return this.activeInvoice.length < 10 ? '0' + this.activeInvoice.length : this.activeInvoice.length;
             },
             onlyDrafts() {
-                const showDrafts =  this.allInvoices.filter((val) => {
-                    return val.invoiceStatus === 'Draft'
+                const showDrafts =  this.activeInvoice.filter((val) => {
+                    return val.invoiceStatus === 'Draft';
                 });
                 return showDrafts.length < 10 ? '0' + showDrafts.length : showDrafts.length;
             },
             onlyInvoices() {
-                const showDrafts =  this.allInvoices.filter((val) => {
-                    return val.invoiceStatus === 'Invoice'
+                const showDrafts =  this.activeInvoice.filter((val) => {
+                    return val.invoiceStatus === 'Invoice';
                 });
                 return showDrafts.length < 10 ? '0' + showDrafts.length : showDrafts.length;
-            }
+            },
+            deletedInvoices() {
+                return this.deletedInvoice.length < 10 ? '0' + this.deletedInvoice.length : this.deletedInvoice.length;
+            },
         },
         methods: {
             // open and close modal
@@ -496,12 +507,12 @@
                 const querySnapshot = await getDocs(q);
                 querySnapshot.forEach((doc) => {
                     this.allInvoices.push({...doc.data(), id: doc.id});
-                    console.log(doc.data(), 'doc.data()');
                     setTimeout(() => {
                         window.$('#datatable').DataTable();
                         window.$('#datatabledeleted').DataTable();
                     }, 1100)
                 });
+                console.log(this.allInvoices, 'this.allInvoices');
                 setTimeout(() => {
                     this.toggleSpinner = false;
                 }, 1000)
@@ -511,7 +522,6 @@
                 this.deletedInvoice = this.allInvoices.filter((val) => {
                     return val.invoiceType === 'Deleted';
                 });
-                console.log(this.deletedInvoice ,'deleted val')
             },
             // product table functionality
             addMoreProduct() {
@@ -536,7 +546,6 @@
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     this.invoiceData = {...docSnap.data(), id};
-                    console.log(this.invoiceData)
                 } else {
                     console.log('No data found!');
                 }

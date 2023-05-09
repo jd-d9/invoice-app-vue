@@ -319,7 +319,6 @@
                 const querySnapshot = await getDocs(q);
                 querySnapshot.forEach((doc) => {
                     this.allInvoices.push({...doc.data(), id: doc.id});
-                    console.log(this.allInvoices, 'invoices');
                 });
             },
             selectProvider(id) {

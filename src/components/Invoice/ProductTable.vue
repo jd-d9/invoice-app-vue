@@ -108,8 +108,7 @@
                 //     this.isButtonDisable = false;
                 // }
                 if(this.productInfo[this.productInfo.length - 1].productName) {
-                    console.log(this.productInfo.length);
-                        this.isButtonDisable = false;
+                    this.isButtonDisable = false;
                 }
             },
             // made calculation of product amount
@@ -141,7 +140,6 @@
                 if(this.$route.params.id) {
                     this.selectedValue = val.currencyName;
                     this.currencyValue = val.currencyValue;
-                    console.log(this.selectedValue, this.currencyValue);
                 }
             }
         },

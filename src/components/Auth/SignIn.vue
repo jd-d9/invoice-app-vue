@@ -116,7 +116,12 @@
                 const auth = getAuth();
                 sendPasswordResetEmail(auth, this.userEmail)
                 .then(() => {
-                    console.log('sent')
+                    this.$toast.open({
+                        message: 'Reset Link Successfully Sent on Registered Email',
+                        position: 'top-right',
+                        duration: '5000',
+                        type: 'success'
+                    });
                 })
                 .catch((error) => {
                     console.log(error)
