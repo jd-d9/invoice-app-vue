@@ -130,15 +130,16 @@
                                 </tbody>
                                 <tbody v-else>
                                     <tr>
+                                        <td colspan="9" class="text-center">No Invoice Found</td>
+                                        <!-- <td></td>
                                         <td></td>
                                         <td></td>
                                         <td></td>
-                                        <td></td>
-                                        <td class="text-center">No Invoice Found.</td>
-                                        <td></td>
+                                        <td class="text-center">No Data Found</td>
                                         <td></td>
                                         <td></td>
                                         <td></td>
+                                        <td></td> -->
                                     </tr>
                                 </tbody>
                             </table>
@@ -188,6 +189,7 @@
                                 </tbody>
                                 <tbody v-else>
                                     <tr>
+                                        <!-- <td colspan="7" class="text-center">No Data Found</td> -->
                                         <td></td>
                                         <td></td>
                                         <td></td>

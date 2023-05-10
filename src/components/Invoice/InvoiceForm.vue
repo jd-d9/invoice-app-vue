@@ -182,6 +182,7 @@
                     type: 'success'
                 });
                 if(e.target.value === 'Invoice'){
+                    localStorage.setItem('duplicateInvoiceId', this.$route.params.id);
                     this.$router.push('/payment/' + this.documentId);
                 }else{
                     this.$router.push('/dashboard');

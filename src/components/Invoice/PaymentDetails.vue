@@ -45,7 +45,7 @@
 </template>
 
 <script>
-    import { doc, updateDoc } from 'firebase/firestore';
+    import { doc, getDoc, updateDoc } from 'firebase/firestore';
     import { db } from '../../firebase/index.js';
     export default {
         data() {
@@ -55,7 +55,6 @@
                 bankName: '',
                 accountHolderName: '',
                 ifscCode: '',
-                securityCode: '',
                 mobileNumber: '',
                 accountNumberInvalid: false,
                 confirmAccountInvalid: false,
@@ -156,8 +155,27 @@
                     });
                 }
             },
-
-        }
+            // duplicate payment details
+            async duplicatePaymentDetails() {
+                const documentId = localStorage.getItem('duplicateInvoiceId');
+                const docRef = doc(db, 'invoice-details', documentId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const duplicatePaymentDetails = docSnap.data().bankDetails
+                    this.accountNumber = duplicatePaymentDetails.accountNumber;
+                    this.confirmAccountNumber = duplicatePaymentDetails.accountNumber;
+                    this.bankName = duplicatePaymentDetails.bankName;
+                    this.accountHolderName = duplicatePaymentDetails.accountHolderName;
+                    this.ifscCode = duplicatePaymentDetails.ifscCode;
+                    this.mobileNumber = duplicatePaymentDetails.mobileNumber;
+                } else {
+                    console.log('No data found!');
+                }
+            }
+        },
+        mounted() {
+            this.duplicatePaymentDetails();
+        },
     }
 </script>
 
