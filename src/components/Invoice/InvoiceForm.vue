@@ -59,8 +59,8 @@
                 </billing-details>
                 <product-table @save-product-details="submitProductDetails" :duplicateProductDetailsVal="duplicateProduct" :duplicateCurrencyVal="duplicateCurrency"></product-table>
                 <signature-pad @set-signature="setSignature" :getDuplicateUserSign="userSignature" @save-attachments="setAttachmentFile" :getDuplicateAttcFiles="attachedFiles"></signature-pad>
-                <div class="row" v-if="toggleElements">
-                    <div class="col-12 my-5">
+                <div class="row">
+                    <div class="col-12 my-5" v-if="toggleNote">
                         <h2>Add Note</h2>
                         <jodit-editor v-model="noteContent"/>
                     </div>
@@ -71,8 +71,8 @@
                 </div>
             </div>
         </div>
-        <teleport to='body'>
-            <spin-loader v-if="!toggleElements"></spin-loader>
+        <teleport to='body' v-if="toggleElements">
+            <spin-loader></spin-loader>
         </teleport>
     </div>
 </template>
@@ -113,13 +113,16 @@
                 toggleElement: true,
                 totalProductAmount: '',
                 toastMessage: '',
+                isProductEmpty: 1,
+                toggleElements: true,
+                toggleNote: false,
             }
         },
-        computed: {
-            toggleElements() {
-                return !this.$route.params.id ? true : this.noteContent && this.noteContent;
-            }
-        },
+        // computed: {
+        //     toggleElements() {
+        //         return !this.$route.params.id ? true : this.noteContent && this.noteContent;
+        //     }
+        // },
         methods: {
             // add and delete field
             addNewField() {
@@ -144,48 +147,95 @@
             backToDashboard() {
                 this.$router.push('/dashboard');
             },
+            // for product details
+            async submitProductDetails(productData, currencyData, data) {
+                this.isProductEmpty = data.length;
+                if(this.isProductEmpty !== 0) {
+                    return false;                    
+                }else {
+                    if(this.documentId) {
+                        // do total of amount
+                        if(productData.length > 1) {
+                            this.totalProductAmount = productData.reduce((valOne, valTwo) => {
+                                return (valOne.amount ? valOne.amount : valOne) + valTwo.amount;
+                            })
+                        }else {
+                            this.totalProductAmount = productData[0].amount;
+                        }
+                        const productRef = doc(db, 'invoice-details', this.documentId);
+                        await updateDoc(productRef, {
+                            productDetails: productData,
+                            currency: currencyData,
+                            productTotalAmount: this.totalProductAmount,
+                        });
+                    }
+                }
+            },
             // submit invoice details
             async submitAllDetails(e) {
+                const isFieldEmpty = this.newFieldData.filter((val) => {
+                    return val.fieldName === '' || val.fieldValue === '';
+                });
                 if(!this.invoiceDueDate) {
                     this.$toast.open({
-                        message: 'Please fill above details first.',
+                        message: 'Due date must not be empty',
+                        position: 'top-right',
+                        duration: '5000',
+                        type: 'error'
+                    });
+                    return false
+                }
+                if(isFieldEmpty.length !== 0) {
+                    this.$toast.open({
+                        message: 'Additional field must not be empty',
                         position: 'top-right',
                         duration: '5000',
                         type: 'error'
                     });
                     return false;
                 }
-                const response = await addDoc(collection(db, 'invoice-details'), {
-                    logInId: localStorage.getItem('userId'),
-                    invoiceStatus: e.target.value,
-                    invoiceType: 'Active',
-                    userSignature: this.userSignature,
-                    attachedFile: this.attachedFiles,
-                    additionalNote: this.noteContent,
-                    invoiceDetails: {
-                        invoiceNumber: this.invoiceNumber,
-                        invoiceDate: this.invoiceDate,
-                        invoiceDueDate: this.invoiceDueDate
-                    },
-                    fieldDetails: this.newFieldData,
-                });
-                this.documentId = response._key.path.segments[1];
-                if(e.target.value === 'Draft') {
-                    this.toastMessage = 'Details saved as draft.';
-                }else {
-                    this.toastMessage = 'Detailed added, Now please fill payment details.';
+                if(this.isProductEmpty !== 0) {
+                    this.$toast.open({
+                        message: 'Product details must not be empty',
+                        position: 'top-right',
+                        duration: '5000',
+                        type: 'error'
+                    });
+                    return false;
                 }
-                this.$toast.open({
-                    message: this.toastMessage,
-                    position: 'top-right',
-                    duration: '5000',
-                    type: 'success'
-                });
-                if(e.target.value === 'Invoice'){
-                    localStorage.setItem('duplicateInvoiceId', this.$route.params.id);
-                    this.$router.push('/payment/' + this.documentId);
-                }else{
-                    this.$router.push('/dashboard');
+                else {
+                    const response = await addDoc(collection(db, 'invoice-details'), {
+                        logInId: localStorage.getItem('userId'),
+                        invoiceStatus: e.target.value,
+                        invoiceType: 'Active',
+                        userSignature: this.userSignature,
+                        attachedFile: this.attachedFiles,
+                        additionalNote: this.noteContent,
+                        invoiceDetails: {
+                            invoiceNumber: this.invoiceNumber,
+                            invoiceDate: this.invoiceDate,
+                            invoiceDueDate: this.invoiceDueDate
+                        },
+                        fieldDetails: this.newFieldData,
+                    });
+                    this.documentId = response._key.path.segments[1];
+                    if(e.target.value === 'Draft') {
+                        this.toastMessage = 'Saved as draft';
+                    }else {
+                        this.toastMessage = 'Detailed added, Now please fill payment details';
+                    }
+                    this.$toast.open({
+                        message: this.toastMessage,
+                        position: 'top-right',
+                        duration: '5000',
+                        type: 'success'
+                    });
+                    if(e.target.value === 'Invoice'){
+                        localStorage.setItem('duplicateInvoiceId', this.$route.params.id);
+                        this.$router.push('/payment/' + this.documentId);
+                    }else{
+                        this.$router.push('/dashboard');
+                    }
                 }
             },
             // for provider and client details
@@ -194,25 +244,6 @@
                     const userDataRef = doc(db, 'invoice-details', this.documentId);
                     await updateDoc(userDataRef, {
                         providerAndClientDetails: data
-                    });
-                }
-            },
-            // for product details
-            async submitProductDetails(productData, currencyData) {
-                if(this.documentId) {
-                    // do total of amount
-                    if(productData.length > 1) {
-                        this.totalProductAmount = productData.reduce((valOne, valTwo) => {
-                            return (valOne.amount ? valOne.amount : valOne) + valTwo.amount;
-                        })
-                    }else {
-                        this.totalProductAmount = productData[0].amount;
-                    }
-                    const productRef = doc(db, 'invoice-details', this.documentId);
-                    await updateDoc(productRef, {
-                        productDetails: productData,
-                        currency: currencyData,
-                        productTotalAmount: this.totalProductAmount,
                     });
                 }
             },
@@ -233,12 +264,17 @@
                 this.attachedFiles = this.duplicateInvoiceArray[0].attachedFile;
                 this.newFieldData = this.duplicateInvoiceArray[0].fieldDetails;
                 this.duplicateCurrency = this.duplicateInvoiceArray[0].currency;
-                this.noteContent = this.duplicateInvoiceArray[0].additionalNote;
+                setTimeout(() => {
+                    this.toggleNote = true;
+                    this.noteContent = this.duplicateInvoiceArray[0].additionalNote;
+                    this.toggleElements = false;
+                }, 700)
             }
         },
         mounted() {
-            if(window.location.pathname == '/create-invoice/' + this.$route.params.id) {
-                this.toggleElement = false;
+            if(!this.$route.params.id) {
+                this.toggleElements = false;
+                this.toggleNote = true;
             }
         }
     }

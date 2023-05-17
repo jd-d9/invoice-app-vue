@@ -36,7 +36,8 @@
                         <p class="text-danger mt-2 mb-0" v-if="mobileInvalid"><i class="fa-solid fa-circle-exclamation"></i> Please enter valid mobile number.</p>
                     </div>
                     <div class="col-12 mt-4 text-end">
-                        <base-button buttonTitle="Add" @click="saveCardDetails"></base-button>
+                        <base-button buttonTitle="Skip" class="me-4" mode="outline" @click="skipBankDetails"></base-button>
+                        <base-button buttonTitle="Add" @click="saveBankDetails"></base-button>
                     </div>
                 </div>
             </div>
@@ -124,7 +125,7 @@
                 }
             },
             // submit card details
-            async saveCardDetails() {
+            async saveBankDetails() {
                 this.setAccountNumber();
                 this.setConfirmAccNumber();
                 this.setAccountHolderName();
@@ -148,20 +149,37 @@
                     });
                     this.$router.push('/preview/' + documentId);
                     this.$toast.open({
-                        message: 'Payment details saved successfully',
+                        message: 'Payment details successfully saved',
                         position: 'top-right',
                         duration: '5000',
                         type: 'success'
                     });
+                    localStorage.removeItem('duplicateInvoiceId');
                 }
+            },
+            // skip bank details
+            async skipBankDetails() {
+                const documentId = this.$route.params.id;
+                const paymentRef = doc(db, 'invoice-details', documentId);
+                await updateDoc(paymentRef, {
+                    bankDetails: {
+                        accountNumber: '',
+                        accountHolderName: '',
+                        bankName: '',
+                        ifscCode: '',
+                        mobileNumber: ''
+                    }
+                });
+                this.$router.push('/preview/' + documentId);
+                localStorage.removeItem('duplicateInvoiceId');
             },
             // duplicate payment details
             async duplicatePaymentDetails() {
-                const documentId = localStorage.getItem('duplicateInvoiceId');
-                const docRef = doc(db, 'invoice-details', documentId);
+                const invoiceId = localStorage.getItem('duplicateInvoiceId');
+                const docRef = doc(db, 'invoice-details', invoiceId);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    const duplicatePaymentDetails = docSnap.data().bankDetails
+                    const duplicatePaymentDetails = docSnap.data().bankDetails;
                     this.accountNumber = duplicatePaymentDetails.accountNumber;
                     this.confirmAccountNumber = duplicatePaymentDetails.accountNumber;
                     this.bankName = duplicatePaymentDetails.bankName;

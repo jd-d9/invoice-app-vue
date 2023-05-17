@@ -38,8 +38,8 @@
                                     </div>
                                 </button>
                                 <ul class="dropdown-menu w-100">
-                                    <li v-if="allInvoices.length == 0" class="text-center py-2">Please create atleast one provider</li>
-                                    <li v-for="provider in allInvoices" :key="provider">
+                                    <li v-if="mergeDuplicateProvider.length == 0" class="text-center py-2">Please create atleast one provider</li>
+                                    <li v-for="provider in mergeDuplicateProvider" :key="provider">
                                         <a class="dropdown-item" href="javascript:void(0)" @click="selectProvider(provider.id)">
                                             <div class="d-flex justify-content-start align-items-center">
                                                 <div class="logo-image">
@@ -70,10 +70,15 @@
                             <input type="text" id="address" placeholder="Address" v-model="providerAddress">
                         </div>
                         <div class="col-md-5 my-2">
-                            <input type="text" id="country" placeholder="Country" v-model="countryName">
+                            <select class="dropdown-state-country" @change="selectProviderCountry" v-model="countryName">
+                                <option :value="country.name" v-for="(country, ind) in getAllCountry" :key="ind">{{ country.name }}</option>
+                            </select>
                         </div>
                         <div class="col-md-5 my-2">
-                            <input type="text" id="state" placeholder="State" v-model="stateName">
+                            <select class="dropdown-state-country" v-model="stateName">
+                                <option v-if="getProviderCountryState.length === 0" selected>No state available</option>
+                                <option :value="state.name" v-for="(state, ind) in getProviderCountryState" :key="ind">{{ state.name }}</option>
+                            </select>
                         </div>
                         <div class="col-md-5 my-2">
                             <input type="number" id="pinCode" placeholder="Pincode" v-model="pinCode">
@@ -88,18 +93,18 @@
                                 <button class="btn dropdown-toggle text-secondary w-100 border-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <div class="d-flex justify-content-start align-items-center">
                                         <div class="logo-image">
-                                            <img src="../../assets/img1.jpg" alt="img">
+                                            <img src="../../assets/default-image.png" alt="img">
                                         </div>
                                         <p class="mb-0 ms-2">{{ selectClientHead }}</p>
                                     </div>    
                                 </button>
                                 <ul class="dropdown-menu w-100">
-                                    <li v-if="allInvoices.length == 0" class="text-center py-2">Please create atleast one client</li>
-                                    <li v-for="client in allInvoices" :key="client">
+                                    <li v-if="mergeDuplicateClient.length == 0" class="text-center py-2">Please create atleast one client</li>
+                                    <li v-for="client in mergeDuplicateClient" :key="client">
                                         <a class="dropdown-item" href="javascript:void(0)" @click="selectClient(client.id)">
                                             <div class="d-flex justify-content-start align-items-center">
                                                 <div class="logo-image">
-                                                    <img :src="client.providerAndClientDetails.providerLogo" alt="img">
+                                                    <img src="../../assets/default-image.png" alt="img">
                                                 </div>
                                                 <p class="mb-0 ms-2">{{ client.providerAndClientDetails.clientName }}</p>
                                             </div>
@@ -125,18 +130,23 @@
                         <div class="col-md-10 ms-auto my-2">
                             <input type="text" id="address" placeholder="Address" v-model="clientAddress">
                         </div>
-                        <div class="col-md-5 ms-auto my-2">
-                            <input type="text" id="country" placeholder="Country" v-model="clientCountry">
+                        <div class="col-md-5 ms-auto my-2 client-country">
+                            <select class="dropdown-state-country" @change="selectClientCountry" v-model="clientCountry">
+                                <option :value="country.name" v-for="(country, ind) in getAllCountry" :key="ind">{{ country.name }}</option>
+                            </select>
                         </div>
-                        <div class="col-md-5 my-2">
-                            <input type="text" id="state" placeholder="State" v-model="clientState">
+                        <div class="col-md-5 ms-auto my-2">
+                            <select class="dropdown-state-country" v-model="clientState">
+                                <option v-if="getClientCountryState.length === 0" selected>No state available</option>
+                                <option :value="state.name" v-for="(state, ind) in getClientCountryState" :key="ind">{{ state.name }}</option>
+                            </select>
                         </div>
                         <div class="col-md-5 ms-auto my-2">
                             <input type="number" id="pincode" placeholder="Pincode" v-model="clientPincode">
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>  
         </div>
     </form>
 </template>
@@ -154,16 +164,19 @@
                 providerEmail: '',
                 providerAddress: '',
                 pinCode: '',
-                stateName: '',
-                countryName: '',
+                stateName: 'Gujarat',
+                countryName: 'India',
                 clientName: '',
                 clientContact: '',
                 clientEmail: '',
                 clientAddress: '',
                 clientPincode: '',
-                clientState: '',
-                clientCountry: '',
+                clientState: 'Karnataka',
+                clientCountry: 'India',
                 imageUrl: '',
+                getAllCountry: [],
+                getProviderCountryState: [],
+                getClientCountryState: [],
                 emailIsInvalid: true,
                 mailIsInvalid: true,
                 nameInvalid: true,
@@ -171,6 +184,12 @@
                 clientNameInvalid: true,
                 clientContactInvalid: true,
                 allInvoices: [],
+                selectedProvider: [],
+                selectedClient: [],
+                mergeDuplicateProvider: [],
+                mergeDuplicateClient: [],
+                emptyProviderState: '',
+                emptyClientState: '',
             }
         },
         computed: {
@@ -270,11 +289,10 @@
                     console.log(error)
                 }, 
                 () => {
-                        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                            this.imageUrl = downloadURL;
-                        });
-                    }
-                );
+                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                        this.imageUrl = downloadURL;
+                    });
+                });
             },
             setExistingImage(data) {
                 this.imageUrl = data;
@@ -313,53 +331,158 @@
                 }
                 this.$emit('provider-and-client-details', clientAndProvider);
             },
-            // for get and show all invoices
+            // for get and store all invoices data
             async getAllInvoices() {
                 const q = query(collection(db, 'invoice-details'), where('logInId', '==', localStorage.getItem('userId')));
                 const querySnapshot = await getDocs(q);
                 querySnapshot.forEach((doc) => {
                     this.allInvoices.push({...doc.data(), id: doc.id});
                 });
+                this.removeDuplicateProvider();
+                this.removeDuplicateClient();
+            },
+            // remove duplicates from existing provider dropdowns
+            removeDuplicateProvider() {
+                this.mergeDuplicateProvider = [];
+                const unique = this.allInvoices.filter((element) => {
+                    if(this.mergeDuplicateProvider.length === 0) {
+                        this.mergeDuplicateProvider.push(element);
+                    }
+                    else{
+                        let isDuplicate = this.mergeDuplicateProvider.findIndex((val) => {
+                            return val.providerAndClientDetails.providerName.toUpperCase().includes(element.providerAndClientDetails.providerName.toUpperCase());
+                        })
+                        if (isDuplicate === -1) {
+                            this.mergeDuplicateProvider.push(element);
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+                return unique;
+            },
+            // remove duplicates from existing client dropdowns
+            removeDuplicateClient() {
+                this.mergeDuplicateClient = [];
+                const unique = this.allInvoices.filter((element) => {
+                    if(this.mergeDuplicateClient.length === 0) {
+                        this.mergeDuplicateClient.push(element);
+                    }
+                    else{
+                        var isDuplicate = this.mergeDuplicateClient.findIndex((val) => {
+                            return val.providerAndClientDetails.clientName.toUpperCase().includes(element.providerAndClientDetails.clientName.toUpperCase());
+                        })
+                        if (isDuplicate === -1) {
+                            this.mergeDuplicateClient.push(element);
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+                return unique;
             },
             selectProvider(id) {
-                const selectedProvider = this.allInvoices.filter((val) => {
-                    return val.id == id
+                this.selectedProvider = this.allInvoices.filter((val) => {
+                    return val.id === id
                 });
-                this.imageUrl = selectedProvider[0].providerAndClientDetails.providerLogo;
-                this.providerName = selectedProvider[0].providerAndClientDetails.providerName;
-                this.providerContact = selectedProvider[0].providerAndClientDetails.providerContact;
-                this.providerEmail = selectedProvider[0].providerAndClientDetails.providerEmail;
-                this.providerAddress = selectedProvider[0].providerAndClientDetails.providerAddress;
-                this.pinCode = selectedProvider[0].providerAndClientDetails.providerPincode;
-                this.stateName = selectedProvider[0].providerAndClientDetails.providerState;
-                this.countryName = selectedProvider[0].providerAndClientDetails.providerCountry;
+                this.imageUrl = this.selectedProvider[0].providerAndClientDetails.providerLogo;
+                this.providerName = this.selectedProvider[0].providerAndClientDetails.providerName;
+                this.providerContact = this.selectedProvider[0].providerAndClientDetails.providerContact;
+                this.providerEmail = this.selectedProvider[0].providerAndClientDetails.providerEmail;
+                this.providerAddress = this.selectedProvider[0].providerAndClientDetails.providerAddress;
+                this.pinCode = this.selectedProvider[0].providerAndClientDetails.providerPincode;
+                this.countryName = this.selectedProvider[0].providerAndClientDetails.providerCountry;
+                this.stateName = this.selectedProvider[0].providerAndClientDetails.providerState;
+                this.emptyProviderState = this.selectedProvider[0].providerAndClientDetails.providerState;
+                this.selectProviderCountry();
             },
             selectClient(id) {
-                const selectedClient = this.allInvoices.filter((val) => {
-                    return val.id == id
+                this.selectedClient = this.allInvoices.filter((val) => {
+                    return val.id === id
                 });
-                // this.imageUrl = selectedClient[0].providerAndClientDetails.providerLogo;
-                this.clientName = selectedClient[0].providerAndClientDetails.clientName;
-                this.clientContact = selectedClient[0].providerAndClientDetails.clientContact;
-                this.clientAddress = selectedClient[0].providerAndClientDetails.clientAddress;
-                this.clientPincode = selectedClient[0].providerAndClientDetails.clientPincode;
-                this.clientState = selectedClient[0].providerAndClientDetails.clientState;
-                this.clientCountry = selectedClient[0].providerAndClientDetails.clientCountry;
-                this.clientEmail = selectedClient[0].providerAndClientDetails.clientEmail;
+                this.clientName = this.selectedClient[0].providerAndClientDetails.clientName;
+                this.clientContact = this.selectedClient[0].providerAndClientDetails.clientContact;
+                this.clientEmail = this.selectedClient[0].providerAndClientDetails.clientEmail;
+                this.clientAddress = this.selectedClient[0].providerAndClientDetails.clientAddress;
+                this.clientPincode = this.selectedClient[0].providerAndClientDetails.clientPincode;
+                this.clientCountry = this.selectedClient[0].providerAndClientDetails.clientCountry;
+                this.clientState = this.selectedClient[0].providerAndClientDetails.clientState;
+                this.emptyClientState = this.selectedClient[0].providerAndClientDetails.clientState;
+                this.selectClientCountry();
             },
             duplicatInvoiceData() {
                 const invoiceId = this.$route.params.id;
                 setTimeout(() => {
-                    this.$emit('duplicate-invoice-data', this.allInvoices);
                     this.selectProvider(invoiceId);
                     this.selectClient(invoiceId);
+                    this.$emit('duplicate-invoice-data', this.allInvoices);
                 }, 2000);
+            },
+            // get country and their states
+            getAllCountries() {
+                fetch('https://countriesnow.space/api/v0.1/countries/states')
+                .then(async (response) => {
+                    return await response.json();
+                })
+                .then((result) => {
+                    this.getAllCountry = [];
+                    result.data.forEach((country) => {
+                        this.getAllCountry.push(country);
+                    });
+                })
+                .catch((error) => {
+                    console.log(error);
+                })
+            },
+            selectProviderCountry() {
+                this.getProviderCountryState = [];
+                const selectedState = this.getAllCountry.filter((val) => {
+                    return val.name === this.countryName;
+                })
+                selectedState[0].states.forEach((val) => {
+                    this.getProviderCountryState.push(val);
+                })
+                if(this.emptyProviderState) {
+                    this.stateName = this.selectedProvider[0].providerAndClientDetails.providerState;
+                    this.emptyProviderState = '';
+                }
+                else if(this.getProviderCountryState.length !== 0) {
+                    this.stateName = this.getProviderCountryState[0].name;
+                }
+                else{
+                    this.stateName = 'No state available';
+                }
+            },
+            selectClientCountry() {
+                this.getClientCountryState = [];
+                const selectedState = this.getAllCountry.filter((val) => {
+                    return val.name === this.clientCountry;
+                })
+                selectedState[0].states.forEach((val) => {
+                    this.getClientCountryState.push(val);
+                })
+                if(this.emptyClientState) {
+                    this.clientState = this.selectedClient[0].providerAndClientDetails.clientState;
+                    this.emptyClientState = '';
+                }
+                else if(this.getClientCountryState.length !== 0) {
+                    this.clientState = this.getClientCountryState[0].name;
+                }
+                else{
+                    this.clientState = 'No state available';
+                }
             }
         },
         mounted() {
             this.getAllInvoices();
+            this.getAllCountries();
             if(this.$route.params.id) {
                 this.duplicatInvoiceData();
+            }else {
+                setTimeout(() => {
+                    this.selectProviderCountry();
+                    this.selectClientCountry();
+                }, 1100)
             }
         },
         unmounted() {
@@ -429,7 +552,19 @@ input {
 h5 {
     color: #ffb62d;
 }
-
+.dropdown-state-country {
+    padding: 4px 0px;
+    width: 100%;
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid black;
+}
+.dropdown-state-country:focus-visible {
+    outline: none;
+}
+.client-country {
+    transform: translateX(49px);
+}
 input:focus, textarea:focus {
     outline: none;
 }

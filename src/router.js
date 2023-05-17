@@ -5,6 +5,7 @@ import InvoiceDashboard from '../src/components/Invoice/InvoiceDashboard.vue';
 import InvoiceForm from '../src/components/Invoice/InvoiceForm.vue';
 import PaymentDetails from '../src/components/Invoice/PaymentDetails.vue';
 import PreviewDetails from '../src/components/Invoice/PreviewDetails.vue';
+import NotFound from '../src/components/UI/NotFound.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -17,10 +18,11 @@ const router = createRouter({
         {path: '/create-invoice/:id', component: InvoiceForm, meta: {auth: true}},
         {path: '/preview/:id', component: PreviewDetails, meta: {auth: true}},
         {path: '/payment/:id', component: PaymentDetails, meta: {auth: true}},
+        {path: '/:notFound(.*)', component: NotFound},
         // {path: '/preview', 
         //     component: PreviewDetails, 
         //     meta: {auth: true},
-            
+        
         // },
     ]
 });

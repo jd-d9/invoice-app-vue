@@ -1,6 +1,6 @@
 <template>
     <div class="row align-items-end mt-5" id="bwPrint">
-        <div class="col-12 mb-5" v-if="attachedfile">
+        <div class="col-12 mb-5" v-if="isAvailable !== 0">
             <h5>Attached Files</h5>
             <div v-for="(file, ind) of attachedfile" :key="ind">
                 <a :href="file.downloadURL" target="_blank" class="attach-file">{{Number(ind) + 1}}. {{file.fileName}}</a>
@@ -35,6 +35,16 @@
 <script>
     export default {
         props: ['setUserSignature', 'attachedfile', 'additionalNoteContent'],
+        data() {
+            return {
+                isAvailable: 1,
+            }
+        },
+        watch: {
+            attachedfile(val) {
+                this.isAvailable = val.length;
+            }
+        }
     }
 </script>
 

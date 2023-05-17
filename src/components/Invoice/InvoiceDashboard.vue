@@ -93,15 +93,15 @@
                                     </tr>
                                 </tbody>
                                 <tbody v-else-if="!toggleSpinner && activeInvoice.length !== 0">
-                                    <tr v-for="(invoice, ind) in activeInvoice" :key="invoice.id" class="odd">
-                                        <td>{{ ind + 1 }}</td>
-                                        <td>{{ invoice.invoiceDetails.invoiceNumber }}</td>
-                                        <td>{{ invoice.providerAndClientDetails.clientName }}</td>
-                                        <td>{{ invoice.invoiceDetails.invoiceDate }}</td>
-                                        <td>{{ invoice.invoiceDetails.invoiceDueDate }}</td>
-                                        <td>{{ parseFloat(invoice.productTotalAmount * invoice.currency.currencyValue).toFixed(2)}}</td>
-                                        <td>{{ invoice.currency.currencyName.slice(0, 3) }}</td>
-                                        <td><span class="invoice-status text-white rounded-pill" :class="{'bg-warning': invoice.invoiceStatus === 'Invoice'}">{{ invoice.invoiceStatus }}</span></td>
+                                    <tr v-for="(invoice, ind) in activeInvoice" :key="invoice.id" class="row-cursor-change">
+                                        <td @click="editInvoiceData(invoice.id)">{{ ind + 1 }}</td>
+                                        <td @click="editInvoiceData(invoice.id)">{{ invoice.invoiceDetails.invoiceNumber }}</td>
+                                        <td @click="editInvoiceData(invoice.id)">{{ invoice.providerAndClientDetails.clientName }}</td>
+                                        <td @click="editInvoiceData(invoice.id)">{{ invoice.invoiceDetails.invoiceDate }}</td>
+                                        <td @click="editInvoiceData(invoice.id)">{{ invoice.invoiceDetails.invoiceDueDate }}</td>
+                                        <td @click="editInvoiceData(invoice.id)">{{ parseFloat(invoice.productTotalAmount * invoice.currency.currencyValue).toFixed(2)}}</td>
+                                        <td @click="editInvoiceData(invoice.id)">{{ invoice.currency.currencyName.slice(0, 3) }}</td>
+                                        <td @click="editInvoiceData(invoice.id)"><span class="invoice-status text-white rounded-pill" :class="{'bg-warning': invoice.invoiceStatus === 'Invoice'}">{{ invoice.invoiceStatus }}</span></td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end align-items-center">
                                                 <div v-if="invoice.invoiceStatus === 'Invoice'" class="preview-button">
@@ -152,7 +152,7 @@
                                     <tr>
                                         <th>Sr</th>
                                         <th>Invoice No</th>
-                                        <th>Customer Name</th>
+                                        <th class="customer-name">Customer Name</th>
                                         <th>Issue Date</th>
                                         <th>Due Date</th>
                                         <th>Status</th>
@@ -175,7 +175,7 @@
                                     </tr>
                                 </tbody>
                                 <tbody v-else-if="!toggleSpinner && deletedInvoice.length !== 0">
-                                    <tr v-for="(invoice, ind) in deletedInvoice" :key="invoice.id" class="odd">
+                                    <tr v-for="(invoice, ind) in deletedInvoice" :key="invoice.id">
                                         <td>{{ ind + 1 }}</td>
                                         <td>{{ invoice.invoiceDetails.invoiceNumber }}</td>
                                         <td>{{ invoice.providerAndClientDetails.clientName }}</td>
@@ -207,7 +207,7 @@
         </div>
         <!-- Modal -->
         <teleport to='body'>
-            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" role="dialog">
+            <div class="modal fade" id="exampleModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" role="dialog">
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header px-4">
@@ -216,10 +216,12 @@
                         </div>
                         <div class="modal-body px-4">
                             <h5 class="mb-1">Invoice</h5>
-                            <div class="row align-items-center">
+                            <div class="row align-items-top">
                                 <div class="col-3 my-2">
                                     <label for="invoiceNumber" class="mt-1">Invoice#</label>
-                                    <input type="text" id="invoiceNumber" v-model="invoiceNumber">
+                                    <input type="text" id="invoiceNumber" :class="{'invoice-number': invoiceNumberIsExist || invoiceNumberIsEmpty}" v-model="invoiceNumber" @keyup="isInvoiceNumberExist">
+                                    <p class="text-danger mt-2 mb-0" v-if="invoiceNumberIsExist"><i class="fa-solid fa-circle-exclamation"></i> Number already exist.</p>
+                                    <p class="text-danger mt-2 mb-0" v-if="invoiceNumberIsEmpty"><i class="fa-solid fa-circle-exclamation"></i> Number is required.</p>
                                 </div>
                                 <div class="col-3 my-2">
                                     <label for="invoiceDate" class="mt-1">Date:</label>
@@ -234,7 +236,7 @@
                                         <input class="input-lable" placeholder="Field Title" type="text" v-model="field.fieldName">
                                         <i class="fa-solid fa-xmark text-danger delete-button" @click.prevent="deleteFeild(ind)"></i>
                                     </div>
-                                    <input type="text" placeholder="Value" v-model="field.fieldValue">
+                                    <input type="text" placeholder="Value" :class="{'additional-field': invalidField}" v-model="field.fieldValue">
                                 </div>
                                 <div class="col-3 my-2 text-center">
                                     <button class="add-field" @click.prevent="addNewField">Add New Field</button>
@@ -273,12 +275,15 @@
                                     <input type="number" id="pinCode" v-model="pinCode">
                                 </div>
                                 <div class="col-md-3 my-3">
-                                    <label for="country" class="me-2">Country</label>
-                                    <input type="text" id="country" v-model="countryName">
+                                    <select class="dropdown-state-country" @change="selectProviderCountry" v-model="countryName">
+                                        <option :value="country.name" v-for="(country, ind) in getAllCountry" :key="ind">{{ country.name }}</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-3 my-3">
-                                    <label for="state" class="me-2">State</label>
-                                    <input type="text" id="state" v-model="stateName">
+                                    <select class="dropdown-state-country" v-model="stateName">
+                                        <option v-if="getProviderCountryState.length === 0" selected>No state available</option>
+                                        <option :value="state.name" v-for="(state, ind) in getProviderCountryState" :key="ind">{{ state.name }}</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="row">
@@ -304,15 +309,18 @@
                                     <input type="number" id="pincode" v-model="clientPincode">
                                 </div>
                                 <div class="col-md-3 my-3">
-                                    <label for="country" class="me-2">Country</label>
-                                    <input type="text" id="country" v-model="clientCountry">
+                                    <select class="dropdown-state-country" @change="selectClientCountry" v-model="clientCountry">
+                                        <option :value="country.name" v-for="(country, ind) in getAllCountry" :key="ind">{{ country.name }}</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-3 my-3">
-                                    <label for="state" class="me-2">State</label>
-                                    <input type="text" id="state" v-model="clientState">
+                                    <select class="dropdown-state-country" v-model="clientState">
+                                        <option v-if="getClientCountryState.length === 0" selected>No state available</option>
+                                        <option :value="state.name" v-for="(state, ind) in getClientCountryState" :key="ind">{{ state.name }}</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div class="row" v-if="accountNumber">
+                            <div class="row">
                                 <h5 class="mt-3 mb-1">Bank Details</h5>
                                 <div class="col-md-6 my-3">
                                     <label for="accountNumber" class="me-2">Account Number</label>
@@ -335,7 +343,7 @@
                                     <input type="text" id="mobileNumber" v-model="mobileNumber">
                                 </div>
                             </div>
-                            <div class="row">
+                            <div class="row mt-3">
                                 <div class="col-4">
                                     <h5>Products</h5>
                                 </div>
@@ -347,7 +355,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <table class="table">
+                                <table class="table mt-2">
                                     <thead class="table-head">
                                         <tr>
                                             <th scope="col">Product</th>
@@ -389,10 +397,10 @@
                             <div class="row">
                                 <signature-pad :getUserSignature="userSignature" @set-signature="setNewSignature" :setAttachedFile="setFile" @save-attachments="updateAttachments"></signature-pad>
                             </div>
-                            <div class="row" v-if="noteContent">
+                            <div class="row">
                                 <div class="col-12 mt-4">
                                     <h5>Add Note</h5>
-                                    <jodit-editor v-model="noteContent"/>
+                                    <jodit-editor v-if="toggleNote" v-model="noteContent"/>
                                 </div>
                             </div>
                         </div>
@@ -451,6 +459,9 @@
                 clientPincode: '',
                 clientState: '',
                 clientCountry: '',
+                getAllCountry: [],
+                getProviderCountryState: [],
+                getClientCountryState: [],
                 accountNumber: '',
                 accountHolderName: '',
                 ifscCode: '',
@@ -470,6 +481,10 @@
                 showInvoiceStatus: '',
                 isInvoiceDeleted: '',
                 toggleSpinner: false,
+                invoiceNumberIsExist: false,
+                invoiceNumberIsEmpty: false,
+                invalidField: false,
+                toggleNote: false
             }
         },
         computed: {
@@ -490,7 +505,7 @@
             },
             deletedInvoices() {
                 return this.deletedInvoice.length < 10 ? '0' + this.deletedInvoice.length : this.deletedInvoice.length;
-            },
+            }
         },
         methods: {
             // open and close modal
@@ -500,6 +515,9 @@
             hideExampleModal() {
                 window.$('#exampleModal').modal('hide');
                 this.noteContent = '';
+                this.invoiceNumberIsExist = false;
+                this.invoiceNumberIsEmpty = false;
+                this.invalidField = false;
             },
             // for get and show all invoices
             async getAllInvoices() {
@@ -578,9 +596,9 @@
                 this.currencyValue = this.invoiceData.currency.currencyValue;
                 this.productInfo = this.invoiceData.productDetails;
                 this.userSignature = this.invoiceData.userSignature;
-                this.noteContent = this.invoiceData.additionalNote;
                 this.setFile = this.invoiceData.attachedFile;
                 this.addedField = this.invoiceData.fieldDetails;
+                this.noteContent = this.invoiceData.additionalNote;
 
                 if(this.invoiceData.bankDetails) {
                     this.accountNumber = this.invoiceData.bankDetails.accountNumber;
@@ -589,6 +607,19 @@
                     this.bankName = this.invoiceData.bankDetails.bankName;
                     this.mobileNumber = this.invoiceData.bankDetails.mobileNumber;
                 }
+                else {
+                    this.accountNumber = '';
+                    this.accountHolderName = '';
+                    this.ifscCode = '';
+                    this.bankName = '';
+                    this.mobileNumber = '';
+                }
+                this.getAllCountries();
+                setTimeout(() => {
+                    this.selectProviderCountry();
+                    this.selectClientCountry();
+                    this.toggleNote = true;
+                }, 500);
             },
             // delete selected invoice
             deleteInvoice(id) {
@@ -603,11 +634,12 @@
                     confirmButtonColor: 'red',
                     confirmButtonText: 'Permanent Delete!',
                     width: '450px'
-                    }).then(async(result) => {
+                    })
+                    .then(async(result) => {
                         if (result.isConfirmed) {
                             await deleteDoc(doc(db, 'invoice-details', id));
                             this.$toast.open({
-                                message: 'Invoice Deleted Successfully',
+                                message: 'Invoice deleted successfully',
                                 position: 'top-right',
                                 duration: '5000',
                                 type: 'success'
@@ -620,7 +652,7 @@
                                 invoiceType: 'Deleted',
                             });
                             this.$toast.open({
-                                message: 'Temporarily Deleted',
+                                message: 'Moved to deleted invoices',
                                 position: 'top-right',
                                 duration: '5000',
                                 type: 'success'
@@ -636,7 +668,7 @@
                     invoiceType: 'Active',
                 });
                 this.$toast.open({
-                    message: 'Invoice Restored Successfully',
+                    message: 'Mark as active invoices',
                     position: 'top-right',
                     duration: '5000',
                     type: 'success'
@@ -702,77 +734,191 @@
                 this.currencyValue = crValue.data[this.selectedValue.slice(0,3)];
                 console.log(this.currencyValue, 'currency-value');
             },
-            // save all changes
-            async saveChanges() {
-                const bankDetails = {
-                    accountHolderName: this.accountHolderName,
-                    accountNumber: this.accountNumber,
-                    ifscCode: this.ifscCode,
-                    bankName: this.bankName,
-                    mobileNumber: this.mobileNumber,
+            // for check invoice number is already exist or not
+            isInvoiceNumberExist() {
+                const isInvoiceNoExist = this.allInvoices.findIndex((val) => {
+                    return val.invoiceDetails.invoiceNumber === this.invoiceNumber;
+                })
+                if(isInvoiceNoExist !== -1) {
+                    this.invoiceNumberIsExist = true;
+                    this.invoiceNumberIsEmpty = false;
                 }
-                const providerAndClientDetails = {
-                    providerLogo: this.imageUrl,
-                    providerName: this.providerName,
-                    providerContact: this.providerContact,
-                    providerEmail: this.providerEmail,
-                    providerAddress: this.providerAddress,
-                    providerPincode: this.pinCode,
-                    providerState: this.stateName,
-                    providerCountry: this.countryName,
-                    clientName: this.clientName,
-                    clientContact: this.clientContact,
-                    clientEmail: this.clientEmail,
-                    clientAddress: this.clientAddress,
-                    clientPincode: this.clientPincode,
-                    clientState: this.clientState,
-                    clientCountry: this.clientCountry,
+                else if(!this.invoiceNumber) {
+                    this.invoiceNumberIsExist = false;
+                    this.invoiceNumberIsEmpty = true;
                 }
-                const invoiceDetails = {
-                    invoiceNumber: this.invoiceNumber,
-                    invoiceDate: this.invoiceDate,
-                    invoiceDueDate: this.invoiceDueDate,
-                }
-
-                const saveChangeRef = doc(db, 'invoice-details', this.invoiceData.id);
-                // do total of amount
-                if(this.productInfo.length > 1) {
-                    this.totalProductAmount = this.productInfo.reduce((valOne, valTwo) => {
-                        return (valOne.amount ? valOne.amount : valOne) + valTwo.amount;
-                    })
-                }else {
-                    this.totalProductAmount = this.productInfo[0].amount;
-                }
-                // get and updating currency value
-                const currency = {
-                    currencyName: this.selectedValue,
-                    currencyValue: this.currencyValue
-                }
-                await updateDoc(saveChangeRef, {
-                    bankDetails: bankDetails,
-                    providerAndClientDetails: providerAndClientDetails,
-                    invoiceDetails: invoiceDetails,
-                    currency: currency,
-                    productDetails: this.productInfo,
-                    productTotalAmount: this.totalProductAmount,
-                    userSignature: this.userSignature,
-                    attachedFile: this.setFile,
-                    additionalNote: this.noteContent,
-                    fieldDetails: this.addedField,
-                    invoiceStatus: 'Invoice'
-                });
-                this.$toast.open({
-                    message: 'All changes saved successfully',
-                    position: 'top-right',
-                    duration: '5000',
-                    type: 'success'
-                });
-                this.hideExampleModal();
-                this.getAllInvoices();
-                if(this.showInvoiceStatus === 'Draft') {
-                    this.$router.push('/payment/' + this.invoiceData.id);
+                else{
+                    this.invoiceNumberIsExist = false;
+                    this.invoiceNumberIsEmpty = false;
                 }
             },
+            // save all changes
+            async saveChanges() {
+                const isProductEmpty = this.productInfo.filter((val) => {
+                    return val.productName === '';
+                });
+                const isFieldEmpty = this.addedField.filter((val) => {
+                    return val.fieldName === '' || val.fieldValue === '';
+                });
+                if(this.invoiceNumberIsExist) {
+                    this.$toast.open({
+                        message: 'Invoice number already exist',
+                        position: 'top-right',
+                        duration: '5000',
+                        type: 'error'
+                    });
+                    return false;
+                }
+                if(this.invoiceNumberIsEmpty) {
+                    this.$toast.open({
+                        message: 'Invoice number must not be empty',
+                        position: 'top-right',
+                        duration: '5000',
+                        type: 'error'
+                    });
+                    return false;
+                }
+                if(isFieldEmpty.length !== 0) {
+                    this.invalidField = true;
+                    this.$toast.open({
+                        message: 'Additional field must not be empty',
+                        position: 'top-right',
+                        duration: '5000',
+                        type: 'error'
+                    });
+                    return false;
+                }
+                if(isProductEmpty.length !== 0) {
+                    this.$toast.open({
+                        message: 'Product details must not be empty',
+                        position: 'top-right',
+                        duration: '5000',
+                        type: 'error'
+                    });
+                    return false;
+                }
+                else {
+                    const bankDetails = {
+                        accountHolderName: this.accountHolderName,
+                        accountNumber: this.accountNumber,
+                        ifscCode: this.ifscCode,
+                        bankName: this.bankName,
+                        mobileNumber: this.mobileNumber,
+                    }
+                    const providerAndClientDetails = {
+                        providerLogo: this.imageUrl,
+                        providerName: this.providerName,
+                        providerContact: this.providerContact,
+                        providerEmail: this.providerEmail,
+                        providerAddress: this.providerAddress,
+                        providerPincode: this.pinCode,
+                        providerState: this.stateName,
+                        providerCountry: this.countryName,
+                        clientName: this.clientName,
+                        clientContact: this.clientContact,
+                        clientEmail: this.clientEmail,
+                        clientAddress: this.clientAddress,
+                        clientPincode: this.clientPincode,
+                        clientState: this.clientState,
+                        clientCountry: this.clientCountry,
+                    }
+                    const invoiceDetails = {
+                        invoiceNumber: this.invoiceNumber,
+                        invoiceDate: this.invoiceDate,
+                        invoiceDueDate: this.invoiceDueDate,
+                    }
+    
+                    const saveChangeRef = doc(db, 'invoice-details', this.invoiceData.id);
+                    // do total of amount
+                    if(this.productInfo.length > 1) {
+                        this.totalProductAmount = this.productInfo.reduce((valOne, valTwo) => {
+                            return (valOne.amount ? valOne.amount : valOne) + valTwo.amount;
+                        })
+                    }else {
+                        this.totalProductAmount = this.productInfo[0].amount;
+                    }
+                    // get and updating currency value
+                    const currency = {
+                        currencyName: this.selectedValue,
+                        currencyValue: this.currencyValue
+                    }
+                    await updateDoc(saveChangeRef, {
+                        bankDetails: bankDetails,
+                        providerAndClientDetails: providerAndClientDetails,
+                        invoiceDetails: invoiceDetails,
+                        currency: currency,
+                        productDetails: this.productInfo,
+                        productTotalAmount: this.totalProductAmount,
+                        userSignature: this.userSignature,
+                        attachedFile: this.setFile,
+                        additionalNote: this.noteContent,
+                        fieldDetails: this.addedField,
+                        invoiceStatus: 'Invoice'
+                    });
+                    this.$toast.open({
+                        message: 'All changes saved successfully',
+                        position: 'top-right',
+                        duration: '5000',
+                        type: 'success'
+                    });
+                    this.hideExampleModal();
+                    this.getAllInvoices();
+                }
+            },
+            // get country and their states
+            getAllCountries() {
+                fetch('https://countriesnow.space/api/v0.1/countries/states')
+                .then(async (response) => {
+                    return await response.json();
+                })
+                .then((result) => {
+                    this.getAllCountry = [];
+                    result.data.forEach((country) => {
+                        this.getAllCountry.push(country);
+                    });
+                })
+                .catch((error) => {
+                    console.log(error);
+                })
+            },
+            selectProviderCountry() {
+                this.getProviderCountryState = []
+                const selectedState = this.getAllCountry.filter((val) => {
+                    return val.name === this.countryName;
+                })
+                selectedState[0].states.forEach((val) => {
+                    this.getProviderCountryState.push(val);
+                })
+                if(this.invoiceData.providerAndClientDetails.providerState) {
+                    this.stateName = this.invoiceData.providerAndClientDetails.providerState;
+                    this.invoiceData.providerAndClientDetails.providerState = '';
+                }
+                else if(this.getProviderCountryState.length !== 0) {
+                    this.stateName = this.getProviderCountryState[0].name;
+                }
+                else{
+                    this.stateName = 'No state available';
+                }
+            },
+            selectClientCountry() {
+                this.getClientCountryState = []
+                const selectedState = this.getAllCountry.filter((val) => {
+                    return val.name === this.clientCountry;
+                })
+                selectedState[0].states.forEach((val) => {
+                    this.getClientCountryState.push(val);
+                })
+                if(this.invoiceData.providerAndClientDetails.clientState) {
+                    this.clientState = this.invoiceData.providerAndClientDetails.clientState;
+                    this.invoiceData.providerAndClientDetails.clientState = '';
+                }
+                else if(this.getClientCountryState.length !== 0) {
+                    this.clientState = this.getClientCountryState[0].name;
+                }
+                else{
+                    this.clientState = 'No state available';
+                }
+            }
         },
         mounted() {
             this.getAllInvoices();
@@ -813,6 +959,12 @@
         border: none;
         border-bottom: 1px solid black;
     }
+    .invoice-number {
+        border-bottom: 1px solid red;
+    }
+    .additional-field {
+        border-color: red;
+    }
     .input-lable {
         width: 80%;
         color: gray;
@@ -821,6 +973,7 @@
         border-bottom: 1px dashed rgba(128, 128, 128, 0.3);
     }
     .add-field {
+        margin-top: 10px;
         background-color: transparent;
         border: 1px dashed #ffb62d;
         padding: 4px 20px;
@@ -840,8 +993,21 @@
     .btn-close {
         opacity: 1;
     }
+    .dropdown-state-country {
+        padding: 4px 0px;
+        width: 100%;
+        background-color: transparent;
+        border: none;
+        border-bottom: 1px solid black;
+    }
+    .dropdown-state-country:focus-visible {
+        outline: none;
+    }
+    .row-cursor-change {
+        cursor: default;
+    }
     input[type="date"]::-webkit-calendar-picker-indicator {
-        filter: invert(1);
+        filter: invert(0.5);
     }
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button {
@@ -850,7 +1016,9 @@
     .modal-content input:-webkit-autofill,
     .modal-content input:-webkit-autofill:hover, 
     .modal-content input:-webkit-autofill:focus, 
-    .modal-content input:-webkit-autofill:active  {
+    .modal-content input:-webkit-autofill:active {
+        -webkit-background-clip: text !important;
+        background-color: transparent !important;
         transition: background-color 5000s !important;
     }
     .modal-footer {

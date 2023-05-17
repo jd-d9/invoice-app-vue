@@ -92,7 +92,7 @@
                 </div>
                 <div class="row mt-4">
                     <h5>Payment Details</h5>
-                    <div class="col-6" v-if="invoiceData">
+                    <div class="col-6" v-if="invoiceData.bankDetails">
                         <p class=" my-2">Bank Details</p>
                         <p>Account Number: {{ invoiceData.bankDetails.accountNumber }}</p>
                         <p>Account Holder Name: {{ invoiceData.bankDetails.accountHolderName }}</p>

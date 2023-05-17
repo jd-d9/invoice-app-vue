@@ -10,26 +10,26 @@
                         <div class="userNames d-flex justify-content-between mt-4">
                             <div>
                                 <div class="form-floating" :class="{invalidInput: !firstNameInvalid}">
-                                    <input type="text" class="form-control" id="floatingInput" placeholder="Enter name" v-model.trim="firstName" @blur="firstNameIsValid">
+                                    <input type="text" autofocus class="form-control" id="floatingInput" placeholder="Enter name" v-model.trim="firstName" @keyup="firstNameIsValid">
                                     <label for="floatingInput">First Name</label>
                                 </div>
                                 <p class="text-danger mt-4 mb-0" v-if="!firstNameInvalid"><i class="fa-solid fa-circle-exclamation"></i> Please enter first name.</p>
                             </div>
                             <div>
                                 <div class="form-floating" :class="{invalidInput: !lastNameInvalid}">
-                                    <input type="text" class="form-control" id="floatingInput" placeholder="Last name" v-model.trim="lastName" @blur="lastNameIsValid">
+                                    <input type="text" class="form-control" id="floatingInput" placeholder="Last name" v-model.trim="lastName" @keyup="lastNameIsValid">
                                     <label for="floatingInput">Last Name</label>
                                 </div>
                                 <p class="text-danger mt-4 mb-0" v-if="!lastNameInvalid"><i class="fa-solid fa-circle-exclamation"></i> Please enter last name.</p>
                             </div>
                         </div>
                         <div class="form-floating my-4" :class="{invalidInput: !emailIsInvalid}">
-                            <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com" v-model.trim="userEmail" @blur="emailIsValid">
+                            <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com" v-model.trim="userEmail" @keyup="emailIsValid">
                             <label for="floatingInput">Email address</label>
                         </div>
                         <p class="text-danger mb-4" v-if="!emailIsInvalid"><i class="fa-solid fa-circle-exclamation"></i> Please enter valid email address.</p>
                         <div class="form-floating my-4" :class="{invalidInput: !passwordIsInvalid}">
-                            <input :type="inputType" class="form-control" id="floatingPassword" placeholder="Password" v-model.trim="userPassword" @blur="passwordIsValid">
+                            <input :type="inputType" class="form-control" id="floatingPassword" placeholder="Password" v-model.trim="userPassword" @keyup="passwordIsValid">
                             <label for="floatingPassword">Password</label>
                             <span class="eye-icons">
                                 <i class="fa-solid fa-eye-slash" v-if="inputType == 'password'" @click="passwordHideShow"></i>
@@ -130,7 +130,7 @@
                         await updateProfile(auth.currentUser, { displayName: this.firstName + ' ' + this.lastName});
                         localStorage.setItem('userId', userCredential.user.uid);
                         this.$toast.open({
-                            message: 'Register Successfully, Hello ' + this.firstName + '. Now you can use ' + this.userEmail + ' to login.',
+                            message: 'Successfully registered, Hello ' + this.firstName,
                             position: 'top-right',
                             duration: '5000',
                             type: 'success'

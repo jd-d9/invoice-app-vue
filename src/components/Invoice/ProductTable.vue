@@ -71,6 +71,7 @@
                 selectedValue: 'INR - ₹',
                 productInfo: [ {productName: '', quantity: 1, rate: 1, amount: 1} ],
                 isButtonDisable: true,
+                isProductEmpty: [],
             }
         },
         methods: {
@@ -104,9 +105,6 @@
             // delete row
             deleteProduct(ind) {
                 this.productInfo.splice(ind, 1);
-                // if(this.productInfo[ind-1].productName) {
-                //     this.isButtonDisable = false;
-                // }
                 if(this.productInfo[this.productInfo.length - 1].productName) {
                     this.isButtonDisable = false;
                 }
@@ -117,16 +115,14 @@
             },
             // add product details to database
             productDetails() {
-                if(!this.productInfo[0].productName) {
-                    return false;
+                this.isProductEmpty = this.productInfo.filter((val) => {
+                    return val.productName === '';
+                })
+                const currency = {
+                    currencyName: this.selectedValue,
+                    currencyValue: this.currencyValue
                 }
-                else {
-                    const currency = {
-                        currencyName: this.selectedValue,
-                        currencyValue: this.currencyValue
-                    }
-                    this.$emit('save-product-details', this.productInfo, currency);
-                }
+                this.$emit('save-product-details', this.productInfo, currency, this.isProductEmpty);
             },
         },
         watch: {
@@ -142,6 +138,9 @@
                     this.currencyValue = val.currencyValue;
                 }
             }
+        },
+        updated() {
+            this.productDetails();
         },
         unmounted() {
             this.productDetails();

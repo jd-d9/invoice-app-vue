@@ -101,9 +101,9 @@
                 uploadTask.on('state_changed', 
                 (snapshot) => {
                     const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    let message = 'Attaching file.'
+                    let message = 'File attaching'
                     if(progress == 100) {
-                        message = 'File Attached';
+                        message = 'File successfully attached';
                     }
                     this.$toast.open({
                         message: message,

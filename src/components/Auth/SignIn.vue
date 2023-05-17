@@ -8,12 +8,12 @@
                         <h1>Sign In Your Self</h1>
                         <p>Not Registered Yet? <router-link to="/signup">Sign Up</router-link></p>
                         <div class="form-floating my-4" :class="{invalidInput: !emailIsInvalid}">
-                            <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com" v-model.trim="userEmail" @blur="emailIsValid">
+                            <input type="email" autofocus class="form-control" id="floatingInput" placeholder="name@example.com" v-model.trim="userEmail" @keyup="emailIsValid">
                             <label for="floatingInput">Email address</label>
                         </div>
                         <p class="text-danger mb-4" v-if="!emailIsInvalid"><i class="fa-solid fa-circle-exclamation"></i> Please enter valid email address.</p>
                         <div class="form-floating my-4" :class="{invalidInput: !passwordIsInvalid}">
-                            <input :type="inputType" class="form-control" id="floatingPassword" placeholder="Password" v-model.trim="userPassword" @blur="passwordIsValid">
+                            <input :type="inputType" class="form-control" id="floatingPassword" placeholder="Password" v-model.trim="userPassword" @keyup="passwordIsValid">
                             <label for="floatingPassword">Password</label>
                             <span class="eye-icons">
                                 <i class="fa-solid fa-eye-slash" v-if="inputType == 'password'" @click="passwordHideShow"></i>
@@ -88,7 +88,7 @@
                     .then((userCredential) => {
                         localStorage.setItem('userId', userCredential.user.uid);
                         this.$toast.open({
-                            message: 'You are successfully loged-in with this email: ' + userCredential.user.email,
+                            message: 'You are successfully logged in',
                             position: 'top-right',
                             duration: '5000',
                             type: 'success'
@@ -97,10 +97,10 @@
                     })
                     .catch((error) => {
                         if(error.code == 'auth/wrong-password') {
-                            error.code = 'wrong password! please enter correct password.'
+                            error.code = 'Wrong password!'
                         }
                         else{
-                            error.code = 'user not found! please enter registered email.'
+                            error.code = 'User not found! Please enter registered email'
                         }
                         this.$toast.open({
                             message: error.code,
@@ -117,11 +117,13 @@
                 sendPasswordResetEmail(auth, this.userEmail)
                 .then(() => {
                     this.$toast.open({
-                        message: 'Reset Link Successfully Sent on Registered Email',
+                        message: 'Reset link successfully sent on registered email',
                         position: 'top-right',
                         duration: '5000',
                         type: 'success'
                     });
+                    this.userEmail = '';
+                    this.userPassword = '';
                 })
                 .catch((error) => {
                     console.log(error)

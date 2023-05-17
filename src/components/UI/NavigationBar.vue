@@ -26,13 +26,16 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item" href="javascript:void(0)" @click="printPage">Print <i class="fa-solid fa-print text-warning mt-1 float-end"></i></a>
+                                <a class="dropdown-item" href="javascript:void(0)" v-if="!ToogleTabs" @click="printPage">Print <i class="fa-solid fa-print text-warning mt-1 float-end"></i></a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="javascript:void(0)" @click="downloadFile">Download <i class="fa-solid fa-download text-warning mt-1 float-end"></i></a>
+                                <a class="dropdown-item" href="javascript:void(0)" v-if="!ToogleTabs" @click="downloadFile">Download <i class="fa-solid fa-download text-warning mt-1 float-end"></i></a>
                             </li>
                             <li>
-                                <hr class="dropdown-divider">
+                                <a class="dropdown-item" href="javascript:void(0)" @click="CreateInvoice">Create New <i class="fa-solid fa-square-plus text-warning mt-1 float-end"></i></a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider" v-if="!ToogleTabs">
                             </li>
                             <li>
                                 <router-link class="dropdown-item" to="/dashboard">All Invoices <i class="fa-solid fa-file-lines text-warning mt-1 float-end"></i></router-link>
@@ -53,6 +56,7 @@
         data() {
             return {
                 ToogleElement: false,
+                ToogleTabs: false,
                 currentUser: '',
             }
         },
@@ -78,6 +82,9 @@
                     filename: 'Download.pdf',
                 });
             },
+            CreateInvoice() {
+                this.$router.push('/create-invoice');
+            },
             signOutUser() {
                 localStorage.removeItem('userId');
                 this.$router.push('/signin');
@@ -92,14 +99,18 @@
                 if(window.location.pathname == '/preview/' + this.$route.params.id) {
                     this.ToogleElement = true;
                 }
-                else {
-                    this.ToogleElement = false;
+            },
+            showToogleTabs() {
+                if(window.location.pathname == '/payment/' + this.$route.params.id) {
+                    this.ToogleElement = true;
+                    this.ToogleTabs = true;
                 }
             },
         },
         mounted() {
             this.displayUserName();
             this.showToogleElement();
+            this.showToogleTabs();
         }
     }
 </script>
