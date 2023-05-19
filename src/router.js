@@ -19,11 +19,6 @@ const router = createRouter({
         {path: '/preview/:id', component: PreviewDetails, meta: {auth: true}},
         {path: '/payment/:id', component: PaymentDetails, meta: {auth: true}},
         {path: '/:notFound(.*)', component: NotFound},
-        // {path: '/preview', 
-        //     component: PreviewDetails, 
-        //     meta: {auth: true},
-        
-        // },
     ]
 });
 

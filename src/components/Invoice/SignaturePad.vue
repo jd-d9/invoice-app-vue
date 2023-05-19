@@ -1,5 +1,6 @@
 <template>
     <div class="row">
+        <!-- attach file -->
         <div class="col-6">
             <h5>Attatch File</h5>
             <div class="file-select d-flex justify-content-center align-items-center">
@@ -11,6 +12,7 @@
                 </label>
             </div>
         </div>
+        <!-- set/view signature -->
         <div class="col-6">
             <h5>Signature</h5>
             <div class="signature-box" v-if="!editSignature">
@@ -56,6 +58,7 @@
             }
         },
         computed: {
+            // set user signature and attachedfile
             setUserSignature() {
                 return this.$props.getUserSignature ? this.$props.getUserSignature : this.setSignature;
             },
@@ -64,9 +67,7 @@
             }
         },
         methods: {
-            undo() {
-                this.$refs.signaturePad.undoSignature();
-            },
+            // save and set signature
             save() {
                 const { isEmpty, data } = this.$refs.signaturePad.saveSignature();
                 if(isEmpty == true) {
@@ -79,6 +80,10 @@
                     this.$emit('set-signature', this.setSignature);
                     this.signatureError = false;
                 }
+            },
+            // signature pad functionalities
+            undo() {
+                this.$refs.signaturePad.undoSignature();
             },
             edit() {
                 this.editSignature = false;
@@ -93,6 +98,7 @@
                     penColor: "#ffb62d",
                 };
             },
+            // attaching files
             attachFile(e) {
                 const fileArray = e.target.files[0];
                 const storage = getStorage();
@@ -126,7 +132,7 @@
                     }
                 );
             },
-            // Image to base64 check in google.
+            // hide/show element
             toggleElments() {
                 if(window.location.pathname == '/dashboard' || window.location.pathname == '/create-invoice/' + this.$route.params.id) {
                     this.editSignature = true;
@@ -137,11 +143,13 @@
             }
         },
         watch: {
+            // get duplicate attach file data
             getDuplicateAttcFiles(val) {
                 if(this.$route.params.id) {
                     this.attachedFile = val;
                 }
             },
+            // get duplicate signature data
             getDuplicateUserSign(val) {
                 if(this.$route.params.id) {
                     this.setSignature = val;

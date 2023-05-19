@@ -17,7 +17,6 @@ import 'jodit/build/jodit.min.css';
 import JoditVue from 'jodit-vue';
 import 'vue-toast-notification/dist/theme-default.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-// import 'bootstrap/dist/js/bootstrap.min.js';
 
 const app = createApp(App);
 app.use(router);

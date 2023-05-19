@@ -66,7 +66,7 @@
             }
         },
         methods: {
-            // for validations
+            // account number validations
             setAccountNumber() {
                 this.accountNumberInvalid = false;
                 const validateAccount = /^[0-9]*$/;
@@ -86,8 +86,8 @@
                     this.confirmAccountInvalid = false;
                 }
             },
+            // holder name validation
             setAccountHolderName() {
-                // const validname = /^[a-zA-Z ]+$/;   // || !this.accountHolderName.match(validname)
                 this.holderNameInvalid = false;
                 if(!this.accountHolderName) {
                     this.holderNameInvalid = true;
@@ -96,6 +96,7 @@
                     this.holderNameInvalid = false;
                 }
             },
+            // bank name validation
             setBankName() {
                 const bankName = /^[a-zA-Z ]+$/;
                 this.bankNameInvalid = false;
@@ -106,6 +107,7 @@
                     this.bankNameInvalid = false;
                 }
             },
+            // ifsc validation
             setIfscCode() {
                 this.ifscCodeInvalid = false;
                 if(!this.ifscCode) {
@@ -115,6 +117,7 @@
                     this.ifscCodeInvalid = false;
                 }
             },
+            // mobile number validation
             setmobileNumber() {
                 this.mobileInvalid = false;
                 if(!this.mobileNumber || this.mobileNumber.toString().length !== 10) {
@@ -124,7 +127,7 @@
                     this.mobileInvalid = false;
                 }
             },
-            // submit card details
+            // submit bank details
             async saveBankDetails() {
                 this.setAccountNumber();
                 this.setConfirmAccNumber();

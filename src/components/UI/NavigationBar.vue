@@ -7,6 +7,7 @@
                         <img src="../../assets/logo.png" class="img-fluid" alt="logo">
                     </div>
                 </div>
+                <!-- show current user -->
                 <div class="col-3 ms-auto text-end">
                     <div class="btn-group">
                         <button type="button" class="btn user-name">{{ currentUser }}</button>
@@ -19,6 +20,7 @@
                         </ul>
                     </div>
                 </div>
+                <!-- action dropdown -->
                 <div class="col-2 ms-auto text-end" v-if="ToogleElement">
                     <div class="btn-group action-button">
                         <button type="button" class="btn user-name">Actions</button>
@@ -61,6 +63,7 @@
             }
         },
         methods: {
+            // display user name
             displayUserName() {
                 const auth = getAuth();
                 onAuthStateChanged(auth, (user) => {
@@ -71,9 +74,11 @@
                     }
                 });
             },
+            // print invoice
             printPage() {
                 window.print();
             },
+            // download invoice
             downloadFile() {
                 html2pdf(document.getElementById('element-to-convert'), {
                     image:        { type: 'jpeg', quality: 0.98 },
@@ -82,9 +87,11 @@
                     filename: 'Download.pdf',
                 });
             },
+            // redirect to create invoice page
             CreateInvoice() {
                 this.$router.push('/create-invoice');
             },
+            // logout user
             signOutUser() {
                 localStorage.removeItem('userId');
                 this.$router.push('/signin');
@@ -95,11 +102,13 @@
                     type: 'info'
                 });
             },
+            // hide/show element
             showToogleElement() {
                 if(window.location.pathname == '/preview/' + this.$route.params.id) {
                     this.ToogleElement = true;
                 }
             },
+            // hide/show nav tabs
             showToogleTabs() {
                 if(window.location.pathname == '/payment/' + this.$route.params.id) {
                     this.ToogleElement = true;

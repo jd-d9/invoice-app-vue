@@ -8,6 +8,7 @@
                     <i class="fa-solid fa-arrow-left text-white"></i>
                 </button>
                 <h1 class="text-center mb-5">Create Invoice</h1>
+                <!-- billing details component -->
                 <billing-details @provider-and-client-details="submitDetails" @duplicate-invoice-data="duplicateInvoiceData">
                     <template v-slot:dateContentSlot>
                         <div class="row">
@@ -57,7 +58,9 @@
                         </div>
                     </template>
                 </billing-details>
+                <!-- product table component -->
                 <product-table @save-product-details="submitProductDetails" :duplicateProductDetailsVal="duplicateProduct" :duplicateCurrencyVal="duplicateCurrency"></product-table>
+                <!-- signature pad component -->
                 <signature-pad @set-signature="setSignature" :getDuplicateUserSign="userSignature" @save-attachments="setAttachmentFile" :getDuplicateAttcFiles="attachedFiles"></signature-pad>
                 <div class="row">
                     <div class="col-12 my-5" v-if="toggleNote">
@@ -67,7 +70,7 @@
                 </div>
                 <div class="text-center">
                     <base-button value="Draft" class="me-4" buttonTitle="Save as Draft" mode="outline" @click="submitAllDetails" v-if="toggleElement"></base-button>
-                    <base-button value="Invoice" buttonTitle="Continue" @click="submitAllDetails"></base-button>
+                    <base-button value="Unpaid" buttonTitle="Continue" @click="submitAllDetails"></base-button>
                 </div>
             </div>
         </div>
@@ -118,13 +121,8 @@
                 toggleNote: false,
             }
         },
-        // computed: {
-        //     toggleElements() {
-        //         return !this.$route.params.id ? true : this.noteContent && this.noteContent;
-        //     }
-        // },
         methods: {
-            // add and delete field
+            // add and delete product table row/field
             addNewField() {
                 const emptyField = {
                     fieldName: '',
@@ -147,7 +145,7 @@
             backToDashboard() {
                 this.$router.push('/dashboard');
             },
-            // for product details
+            // submit product details
             async submitProductDetails(productData, currencyData, data) {
                 this.isProductEmpty = data.length;
                 if(this.isProductEmpty !== 0) {
@@ -171,7 +169,7 @@
                     }
                 }
             },
-            // submit invoice details
+            // submit all invoice details
             async submitAllDetails(e) {
                 const isFieldEmpty = this.newFieldData.filter((val) => {
                     return val.fieldName === '' || val.fieldValue === '';
@@ -230,7 +228,7 @@
                         duration: '5000',
                         type: 'success'
                     });
-                    if(e.target.value === 'Invoice'){
+                    if(e.target.value === 'Unpaid'){
                         localStorage.setItem('duplicateInvoiceId', this.$route.params.id);
                         this.$router.push('/payment/' + this.documentId);
                     }else{
@@ -238,7 +236,7 @@
                     }
                 }
             },
-            // for provider and client details
+            // submit provider and client details
             async submitDetails(data) {
                 if(this.documentId) {
                     const userDataRef = doc(db, 'invoice-details', this.documentId);
@@ -247,13 +245,15 @@
                     });
                 }
             },
-            // for product details
+            // set authorised signature
             setSignature(data) {
                 this.userSignature = data;
             },
+            // set attched file
             setAttachmentFile(data) {
                 this.attachedFiles = data;
             },
+            // duplicate invoice data
             duplicateInvoiceData(data) {
                 this.duplicateInvoiceArray = data.filter((val) => {
                     return val.id === this.$route.params.id;

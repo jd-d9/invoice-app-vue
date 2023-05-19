@@ -93,6 +93,7 @@
                 });
                 this.getExistingImages();
             },
+            // select and set image
             selectImage(e) {
                 this.selectedImage = e.target.src;
                 console.log(this.selectedImage, 'url');
@@ -100,7 +101,7 @@
             saveSelectedImage() {
                 this.$emit('select-image-create', this.selectedImage);
             },
-            // for element toggle
+            // hide/show element
             toggleButton() {
                 if(window.location.pathname == '/create-invoice') {
                     this.toggleElement = true;

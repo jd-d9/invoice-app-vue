@@ -3,6 +3,7 @@
         <div>
             <div class="row align-items-end">
                 <div class="col-5">
+                    <!-- upload and select from existing image -->
                     <div class="d-flex justify-content-start align-items-center gap-3">
                         <div class="profile-photo">
                             <img :src="sourceImage" alt="logo">
@@ -17,6 +18,7 @@
                         </div>
                     </div>
                 </div>
+                <!-- for add some external data -->
                 <div class="col-6 ms-auto">
                     <slot name="dateContentSlot"></slot>
                 </div>
@@ -26,9 +28,11 @@
             <div class="row align-items-center">
                 <div class="col-6">
                     <h5 class="text-black">Bill By</h5>
+                    <!-- provider details -->
                     <div class="row">
                         <div class="col-10">
                             <div class="dropdown-center mb-2">
+                                <!-- existing provider dropdown -->
                                 <button class="btn dropdown-toggle text-secondary w-100 border-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <div class="d-flex justify-content-start align-items-center">
                                         <div class="logo-image">
@@ -83,12 +87,14 @@
                         <div class="col-md-5 my-2">
                             <input type="number" id="pinCode" placeholder="Pincode" v-model="pinCode">
                         </div>
-                    </div>                    
+                    </div>
                 </div>
                 <div class="col-6 text-end">
                     <h5 class="text-end text-black">Bill To</h5>
+                    <!-- client details -->
                     <div class="row">
                         <div class="col-10 ms-auto">
+                            <!-- existing client dropdown -->
                             <div class="dropdown-center mb-2">
                                 <button class="btn dropdown-toggle text-secondary w-100 border-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <div class="d-flex justify-content-start align-items-center">
@@ -294,6 +300,7 @@
                     });
                 });
             },
+            // set an existing image
             setExistingImage(data) {
                 this.imageUrl = data;
             },
@@ -381,6 +388,7 @@
                 });
                 return unique;
             },
+            // select provider from dropdown
             selectProvider(id) {
                 this.selectedProvider = this.allInvoices.filter((val) => {
                     return val.id === id
@@ -396,6 +404,7 @@
                 this.emptyProviderState = this.selectedProvider[0].providerAndClientDetails.providerState;
                 this.selectProviderCountry();
             },
+            // select client from dropdown
             selectClient(id) {
                 this.selectedClient = this.allInvoices.filter((val) => {
                     return val.id === id
@@ -410,6 +419,7 @@
                 this.emptyClientState = this.selectedClient[0].providerAndClientDetails.clientState;
                 this.selectClientCountry();
             },
+            // duplicate invoice data
             duplicatInvoiceData() {
                 const invoiceId = this.$route.params.id;
                 setTimeout(() => {
@@ -434,6 +444,7 @@
                     console.log(error);
                 })
             },
+            // select provider country and get states
             selectProviderCountry() {
                 this.getProviderCountryState = [];
                 const selectedState = this.getAllCountry.filter((val) => {
@@ -453,6 +464,7 @@
                     this.stateName = 'No state available';
                 }
             },
+            // select client country and get states
             selectClientCountry() {
                 this.getClientCountryState = [];
                 const selectedState = this.getAllCountry.filter((val) => {

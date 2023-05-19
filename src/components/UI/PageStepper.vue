@@ -45,16 +45,17 @@
             }
         },
         methods: {
+            // try to create dynamic stepper
             isTabCompleted() {
-                if(window.location.pathname == '/dasboard') {
+                if(window.location.pathname == '/create-invoice' && window.location.pathname == '/create-invoice/' + this.$route.params.id) {
                     this.isInvoice = false;
                 }
-                if(window.location.pathname == '/payment') {
+                if(window.location.pathname == '/Payment/' + this.$route.params.id) {
                     this.isInvoice = false;
                     this.isPayment = true;
                     this.isInvoiceComplet = true;
                 }
-                if(window.location.pathname == '/preview') {
+                if(window.location.pathname == '/preview/' + this.$route.params.id) {
                     this.isInvoice = false;
                     this.isPayment = false;
                     this.isPreview = true;

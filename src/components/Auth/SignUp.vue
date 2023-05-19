@@ -68,6 +68,7 @@
             }
         },
         methods: {
+            // form validations
             emailIsValid() {
                 this.emailIsInvalid = true;
                 const mailFormat = /^[^@]+@\w+(\.\w+)+\w$/;
@@ -85,14 +86,6 @@
                 }
                 else {
                     this.passwordIsInvalid = true;
-                }
-            },
-            passwordHideShow() {
-                if(this.inputType == 'text') {
-                    this.inputType = 'password';
-                }
-                else {
-                    this.inputType = 'text';
                 }
             },
             firstNameIsValid() {
@@ -115,6 +108,16 @@
                     this.lastNameInvalid = true;
                 }
             },
+            // password hide/show
+            passwordHideShow() {
+                if(this.inputType == 'text') {
+                    this.inputType = 'password';
+                }
+                else {
+                    this.inputType = 'text';
+                }
+            },
+            // submit user details and register
             submitAndSignup() {
                 this.emailIsValid();
                 this.passwordIsValid();

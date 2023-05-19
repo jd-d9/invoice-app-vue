@@ -49,6 +49,7 @@
             }
         },
         methods: {
+            // form validations
             emailIsValid() {
                 this.emailIsInvalid = true;
                 const mailFormat = /^[^@]+@\w+(\.\w+)+\w$/;
@@ -68,6 +69,7 @@
                     this.passwordIsInvalid = true;
                 }
             },
+            // password hide/show
             passwordHideShow() {
                 if(this.inputType == 'text') {
                     this.inputType = 'password';
@@ -76,6 +78,7 @@
                     this.inputType = 'text';
                 }
             },
+            // submit credential and signin
             submitAndSignin() {
                 this.emailIsValid();
                 this.passwordIsValid();
@@ -111,6 +114,7 @@
                     });
                 }
             },
+            // send reset password link
             resetUserPassword() {
                 this.emailIsValid();
                 const auth = getAuth();

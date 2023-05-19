@@ -3,6 +3,7 @@
         <navigation-bar></navigation-bar>
         <div class="container my-5">
             <div class="invoice-form p-4">
+                <!-- show total invoices -->
                 <div class="row align-items-center">
                     <div class="col-3">
                         <div class="invoice-wrapper text-center">
@@ -16,19 +17,10 @@
                     <div class="col-3">
                         <div class="invoice-wrapper text-center">
                             <div class="image-wrapper">
-                                <img src="../../assets/invoice-icon2.png" alt="icon" class="img-fluid">
-                            </div>
-                            <h6 class="text-secondary mb-0 mt-2">Drafts</h6>
-                            <h5 class="text-warning text-center fw-bold">{{ onlyDrafts }}</h5>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="invoice-wrapper text-center">
-                            <div class="image-wrapper">
                                 <img src="../../assets/invoice-icon3.png" alt="icon" class="img-fluid">
                             </div>
                             <h6 class="text-secondary mb-0 mt-2">Paid Invoices</h6>
-                            <h5 class="text-warning text-center fw-bold">{{ onlyInvoices }}</h5>
+                            <h5 class="text-warning text-center fw-bold">{{ paidInvoices }}</h5>
                         </div>
                     </div>
                     <div class="col-3">
@@ -36,8 +28,17 @@
                             <div class="image-wrapper">
                                 <img src="../../assets/invoice-icon4.png" alt="icon" class="img-fluid">
                             </div>
-                            <h6 class="text-secondary mb-0 mt-2">Deleted Invoices</h6>
-                            <h5 class="text-warning text-center fw-bold">{{ deletedInvoices }}</h5>
+                            <h6 class="text-secondary mb-0 mt-2">Unpaid Invoices</h6>
+                            <h5 class="text-warning text-center fw-bold">{{ unpaidInvoices }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="invoice-wrapper text-center">
+                            <div class="image-wrapper">
+                                <img src="../../assets/invoice-icon2.png" alt="icon" class="img-fluid">
+                            </div>
+                            <h6 class="text-secondary mb-0 mt-2">Drafts</h6>
+                            <h5 class="text-warning text-center fw-bold">{{ onlyDrafts }}</h5>
                         </div>
                     </div>
                 </div>
@@ -58,6 +59,7 @@
                         <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Deleted Invoices</button>
                     </div>
                 </nav>
+                <!-- show all invoices table -->
                 <div class="tab-content mb-5" id="nav-tabContent">
                     <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
                         <div class="table-wrapper mt-5">
@@ -101,10 +103,10 @@
                                         <td @click="editInvoiceData(invoice.id)">{{ invoice.invoiceDetails.invoiceDueDate }}</td>
                                         <td @click="editInvoiceData(invoice.id)">{{ parseFloat(invoice.productTotalAmount * invoice.currency.currencyValue).toFixed(2)}}</td>
                                         <td @click="editInvoiceData(invoice.id)">{{ invoice.currency.currencyName.slice(0, 3) }}</td>
-                                        <td @click="editInvoiceData(invoice.id)"><span class="invoice-status text-white rounded-pill" :class="{'bg-warning': invoice.invoiceStatus === 'Invoice'}">{{ invoice.invoiceStatus }}</span></td>
+                                        <td @click="editInvoiceData(invoice.id)"><span class="invoice-status text-white rounded-pill" :class="{'bg-warning': invoice.invoiceStatus === 'Unpaid', 'bg-success': invoice.invoiceStatus === 'Paid'}">{{ invoice.invoiceStatus }}</span></td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end align-items-center">
-                                                <div v-if="invoice.invoiceStatus === 'Invoice'" class="preview-button">
+                                                <div v-if="invoice.invoiceStatus !== 'Draft'" class="preview-button">
                                                     <router-link :to="{ path: '/preview/'+ invoice.id}"><i class="fa-solid fa-eye text-black"></i></router-link>
                                                 </div>
                                                 <div class="btn-group">
@@ -114,6 +116,12 @@
                                                     <ul class="dropdown-menu">
                                                         <li>
                                                             <a class="dropdown-item" href="javascript:void(0)" @click="editInvoiceData(invoice.id)" >Edit <i class="fa-solid fa-marker text-success mt-1 float-end"></i></a>
+                                                        </li>
+                                                        <li v-if="invoice.invoiceStatus === 'Unpaid'">
+                                                            <a class="dropdown-item" href="javascript:void(0)" @click="showStaticModal(invoice)" >Mark Paid <i class="fa-solid fa-circle-check text-info mt-1 float-end"></i></a>
+                                                        </li>
+                                                        <li v-if="invoice.invoiceStatus === 'Paid'">
+                                                            <a class="dropdown-item" href="javascript:void(0)" @click="markUnpaid(invoice.id)" > Unpaid <i class="fa-regular fa-circle-check text-info mt-1 float-end"></i></a>
                                                         </li>
                                                         <li>
                                                             <router-link class="dropdown-item" :to="{ path: '/create-invoice/'+ invoice.id}">Duplicate <i class="fa-solid fa-copy text-warning mt-1 float-end"></i></router-link>
@@ -130,8 +138,8 @@
                                 </tbody>
                                 <tbody v-else>
                                     <tr>
-                                        <td colspan="9" class="text-center">No Invoice Found</td>
-                                        <!-- <td></td>
+                                        <!-- <td colspan="9" class="text-center">No Invoice Found</td> -->
+                                        <td></td>
                                         <td></td>
                                         <td></td>
                                         <td></td>
@@ -139,12 +147,13 @@
                                         <td></td>
                                         <td></td>
                                         <td></td>
-                                        <td></td> -->
+                                        <td></td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
+                    <!-- deleted invoice table -->
                     <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
                         <div class="table-wrapper mt-5">
                             <table class="table table-hover" id="datatabledeleted">
@@ -183,7 +192,14 @@
                                         <td>{{ invoice.invoiceDetails.invoiceDueDate }}</td>
                                         <td><span class="invoice-status bg-danger text-white rounded-pill">{{ invoice.invoiceType }}</span></td>
                                         <td class="text-end">
-                                            <button type="button" class="btn dropdown-toggle" @click.prevent="restoreInvoice(invoice.id)"><i class="fa-solid fa-rotate-left text-black"></i></button>
+                                            <div class="d-flex justify-content-end align-items-center gap-3">
+                                                <div>
+                                                    <a class="action-button-deleted" href="javascript:void(0)" @click="deleteDeletedInvoice(invoice.id)"><i class="fa-solid fa-trash-can text-danger"></i></a>
+                                                </div>
+                                                <div>
+                                                    <a class="action-button-deleted me-2" href="javascript:void(0)" @click.prevent="restoreInvoice(invoice.id)"><i class="fa-solid fa-rotate-left text-black"></i></a>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -205,7 +221,7 @@
                 </div>
             </div>
         </div>
-        <!-- Modal -->
+        <!-- edit invoice modal -->
         <teleport to='body'>
             <div class="modal fade" id="exampleModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" role="dialog">
                 <div class="modal-dialog modal-xl">
@@ -411,6 +427,42 @@
                 </div>
             </div>
         </teleport>
+        <!-- paid/unpaid modal -->
+        <teleport to='body'>
+            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title" id="staticBackdropLabel">Invoice Details</h3>
+                            <button type="button" class="btn-close" aria-label="Close" @click="hideStaticModal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row align-items-top">
+                                <div class="col-6 my-2">
+                                    <label for="invoiceNumber" class="mt-1">Invoice Number</label>
+                                    <input type="text" id="invoiceNumber" readonly v-model="invoiceNumber">
+                                </div>
+                                <div class="col-6 my-2">
+                                    <label for="invoiceNumber" class="mt-1">Client Name</label>
+                                    <input type="text" id="invoiceNumber" readonly v-model="clientName">
+                                </div>
+                                <div class="col-6 my-2">
+                                    <label for="invoiceDate" class="mt-1">Issue Date</label>
+                                    <input type="date" id="invoiceDate" readonly v-model="invoiceDate">
+                                </div>
+                                <div class="col-6 my-2">
+                                    <label for="invoiceDueDate" class="mt-1">Due Date</label>
+                                    <input type="date" id="invoiceDueDate" readonly v-model="invoiceDueDate" :min="invoiceDate">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-block modal-footer text-center">
+                            <base-button buttonTitle="Mark As Paid" @click="markPaid"></base-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </teleport>
     </div>
 </template>
 
@@ -479,7 +531,9 @@
                 activeInvoice: [],
                 deletedInvoice: [],
                 showInvoiceStatus: '',
+                invoiceStatus: '',
                 isInvoiceDeleted: '',
+                markPaidUnpaidInvoiceId: '',
                 toggleSpinner: false,
                 invoiceNumberIsExist: false,
                 invoiceNumberIsEmpty: false,
@@ -487,28 +541,45 @@
                 toggleNote: false
             }
         },
+        watch: {
+            // show invoice status
+            invoiceStatus(val) {
+                if(val === 'Draft') {
+                    this.showInvoiceStatus = 'Draft';
+                }else {
+                    this.showInvoiceStatus = 'Invoice';
+                }
+            }
+        },
         computed: {
+            // number of total invoice
             totalInvoices() {
                 return this.activeInvoice.length < 10 ? '0' + this.activeInvoice.length : this.activeInvoice.length;
             },
+            // number of drafts
             onlyDrafts() {
                 const showDrafts =  this.activeInvoice.filter((val) => {
                     return val.invoiceStatus === 'Draft';
                 });
                 return showDrafts.length < 10 ? '0' + showDrafts.length : showDrafts.length;
             },
-            onlyInvoices() {
-                const showDrafts =  this.activeInvoice.filter((val) => {
-                    return val.invoiceStatus === 'Invoice';
+            // number of paid invoice
+            paidInvoices() {
+                const paidInvoices =  this.activeInvoice.filter((val) => {
+                    return val.invoiceStatus === 'Paid';
                 });
-                return showDrafts.length < 10 ? '0' + showDrafts.length : showDrafts.length;
+                return paidInvoices.length < 10 ? '0' + paidInvoices.length : paidInvoices.length;
             },
-            deletedInvoices() {
-                return this.deletedInvoice.length < 10 ? '0' + this.deletedInvoice.length : this.deletedInvoice.length;
+            // number of unpaid invoice
+            unpaidInvoices() {
+                const unpaidInvoices =  this.activeInvoice.filter((val) => {
+                    return val.invoiceStatus === 'Unpaid';
+                });
+                return unpaidInvoices.length < 10 ? '0' + unpaidInvoices.length : unpaidInvoices.length;
             }
         },
         methods: {
-            // open and close modal
+            // open and close edit modal
             showExampleModal() {
                 window.$('#exampleModal').modal('show');
             },
@@ -518,6 +589,25 @@
                 this.invoiceNumberIsExist = false;
                 this.invoiceNumberIsEmpty = false;
                 this.invalidField = false;
+            },
+            // open and close mark paid/unpaid modal
+            showStaticModal(data) {
+                this.markPaidUnpaidInvoiceId = data.id;
+                this.invoiceStatus = data.invoiceStatus;
+                this.invoiceNumber = data.invoiceDetails.invoiceNumber;
+                this.invoiceDate = data.invoiceDetails.invoiceDate;
+                this.invoiceDueDate = data.invoiceDetails.invoiceDueDate;
+                this.clientName = data.providerAndClientDetails.clientName;
+                window.$('#staticBackdrop').modal('show');
+            },
+            hideStaticModal() {
+                window.$('#staticBackdrop').modal('hide');
+                this.invoiceStatus = '';
+                this.invoiceNumber = '';
+                this.invoiceDate = '';
+                this.invoiceDueDate = '';
+                this.clientName = '';
+                this.markPaidUnpaidInvoiceId = '';
             },
             // for get and show all invoices
             async getAllInvoices() {
@@ -543,7 +633,7 @@
                     return val.invoiceType === 'Deleted';
                 });
             },
-            // product table functionality
+            // product table add/delete functionality
             addMoreProduct() {
                 const emptyRow = {
                     productName: '',
@@ -559,7 +649,24 @@
             addProductDetails(ind) {
                 this.productInfo[ind].amount = this.productInfo[ind].rate * this.productInfo[ind].quantity;
             },
-            // get selected invoice details
+            // mark paid invoice
+            async markPaid() {
+                const markInvoiceRef = doc(db, 'invoice-details', this.markPaidUnpaidInvoiceId);
+                await updateDoc(markInvoiceRef, {
+                    invoiceStatus: 'Paid'
+                });
+                this.hideStaticModal();
+                this.getAllInvoices();
+            },
+            // mark unpaid invoice
+            async markUnpaid(id) {
+                const markInvoiceRef = doc(db, 'invoice-details', id);
+                await updateDoc(markInvoiceRef, {
+                    invoiceStatus: 'Unpaid'
+                });
+                this.getAllInvoices();
+            },
+            // get selected invoice details in edit modal
             async editInvoiceData(id) {
                 this.showExampleModal();
                 const docRef = doc(db, 'invoice-details', id);
@@ -569,7 +676,7 @@
                 } else {
                     console.log('No data found!');
                 }
-                this.showInvoiceStatus = this.invoiceData.invoiceStatus;
+                this.invoiceStatus = this.invoiceData.invoiceStatus;
                 this.isInvoiceDeleted = this.invoiceData.invoiceType;
                 this.invoiceNumber = this.invoiceData.invoiceDetails.invoiceNumber;
                 this.invoiceDate = this.invoiceData.invoiceDetails.invoiceDate;
@@ -621,6 +728,17 @@
                     this.toggleNote = true;
                 }, 500);
             },
+            // delete temporary-deleted invoice
+            async deleteDeletedInvoice(id) {
+                await deleteDoc(doc(db, 'invoice-details', id));
+                this.$toast.open({
+                    message: 'Invoice deleted successfully',
+                    position: 'top-right',
+                    duration: '5000',
+                    type: 'success'
+                });
+                this.getAllInvoices();
+            },
             // delete selected invoice
             deleteInvoice(id) {
                 Swal.fire({
@@ -661,7 +779,7 @@
                         }
                 })
             },
-            // restore temporary deleted invoice
+            // restore temporary-deleted invoice
             async restoreInvoice(id) {
                 const temporaryDeleted = doc(db, 'invoice-details', id);
                 await updateDoc(temporaryDeleted, {
@@ -707,6 +825,7 @@
                     }
                 );
             },
+            //select existing image
             setExistingImage(data) {
                 this.imageUrl = data;
                 console.log(this.imageUrl, 'existing-url');
@@ -752,7 +871,7 @@
                     this.invoiceNumberIsEmpty = false;
                 }
             },
-            // save all changes
+            // save and update all changes
             async saveChanges() {
                 const isProductEmpty = this.productInfo.filter((val) => {
                     return val.productName === '';
@@ -853,7 +972,7 @@
                         attachedFile: this.setFile,
                         additionalNote: this.noteContent,
                         fieldDetails: this.addedField,
-                        invoiceStatus: 'Invoice'
+                        invoiceStatus: 'Unpaid'
                     });
                     this.$toast.open({
                         message: 'All changes saved successfully',
@@ -865,7 +984,7 @@
                     this.getAllInvoices();
                 }
             },
-            // get country and their states
+            // get all country list
             getAllCountries() {
                 fetch('https://countriesnow.space/api/v0.1/countries/states')
                 .then(async (response) => {
@@ -881,6 +1000,7 @@
                     console.log(error);
                 })
             },
+            // select provider country and states
             selectProviderCountry() {
                 this.getProviderCountryState = []
                 const selectedState = this.getAllCountry.filter((val) => {
@@ -900,6 +1020,7 @@
                     this.stateName = 'No state available';
                 }
             },
+            // select client country and states
             selectClientCountry() {
                 this.getClientCountryState = []
                 const selectedState = this.getAllCountry.filter((val) => {
@@ -1143,6 +1264,10 @@
     .preview-button {
         margin-right: 5px;
         transform: translateY(-5px);
+    }
+    .action-button-deleted {
+        display: block;
+        margin-bottom: 10px;
     }
     .spinner {
         display: flex;

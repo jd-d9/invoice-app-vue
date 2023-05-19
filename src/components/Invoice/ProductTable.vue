@@ -5,6 +5,7 @@
                 <div class="col-4">
                     <h5>Products Details</h5>
                 </div>
+                <!-- set currency value -->
                 <div class="col-8">
                     <div class="text-end">
                         <span class="text-secondary">Select currency: </span> 
@@ -15,6 +16,7 @@
                 </div>
             </div>
             <table class="table">
+                <!-- product details table -->
                 <thead class="table-head text-white">
                     <tr>
                         <th scope="col">Product</th>
@@ -48,6 +50,7 @@
                 </tbody>
             </table>
             <div class="row mb-4">
+                <!-- add more fields -->
                 <div class="col-md-12 text-end">
                     <button class="add-product" @click="addMoreProduct" :disabled="isButtonDisable">Add More Product</button>
                 </div>
@@ -75,6 +78,7 @@
             }
         },
         methods: {
+            // button disable if product name has no value
             buttonDisable(e) {
                 if(e.target.value) {
                     this.isButtonDisable = false;
@@ -126,12 +130,14 @@
             },
         },
         watch: {
+            // duplicate product details data
             duplicateProductDetailsVal(val) {
                 if(this.$route.params.id) {
                     this.productInfo = val;
                     this.isButtonDisable = false;
                 }
             },
+            // duplicate currency details
             duplicateCurrencyVal(val) {
                 if(this.$route.params.id) {
                     this.selectedValue = val.currencyName;
