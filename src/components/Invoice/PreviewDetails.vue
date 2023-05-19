@@ -532,10 +532,14 @@
                 else{
                     this.selectColor = '#ffb62d';
                 }
+                // scroll to top
+                window.scrollTo({ top: 250, behavior: 'smooth' });
             },
             // change theme color
             selectThemeColor(e) {
                 this.selectColor = e.target.value;
+                // scroll to top
+                window.scrollTo({ top: 250, behavior: 'smooth' });
             }
         },
         mounted() {
